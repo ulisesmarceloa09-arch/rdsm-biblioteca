@@ -14,12 +14,15 @@
 
     body {
       background-color: #0d0b18;
+      background-image: radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.15), transparent 80%);
       color: #ffffff;
+      min-height: 100vh;
     }
 
     /* BARRA SUPERIOR (HEADER) */
     header {
-      background: #151226;
+      background: rgba(21, 18, 38, 0.9);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid #2a244d;
       padding: 12px 24px;
       display: flex;
@@ -148,14 +151,16 @@
       color: #a855f7;
     }
 
-    /* MODAL DE AUTENTICACIÓN */
+    /* MODAL DE AUTENTICACIÓN (VENTANA EMERGENTE) */
     .modal-overlay {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      top: 0; 
+      left: 0;
+      width: 100vw; 
+      height: 100vh;
       background: rgba(0, 0, 0, 0.85);
-      z-index: 1000;
+      z-index: 99999;
       align-items: center;
       justify-content: center;
     }
@@ -168,11 +173,13 @@
       max-width: 360px;
       padding: 25px;
       position: relative;
+      box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
     }
 
     .close-btn {
       position: absolute;
-      right: 15px; top: 10px;
+      right: 15px; 
+      top: 10px;
       font-size: 22px;
       cursor: pointer;
       color: #aaa;
@@ -217,7 +224,7 @@
         <span>🌙 Nivel 1: Mortal Dormido</span>
         <span style="color: #a855f7;">⚡ XP: 0/100</span>
       </div>
-      <button class="btn-auth" onclick="mostrarModal()">Acceder / Registrarse</button>
+      <button class="btn-auth" id="btnAuthTrigger">Acceder / Registrarse</button>
     </div>
   </header>
 
@@ -239,18 +246,18 @@
   <!-- MODAL -->
   <div class="modal-overlay" id="authModal">
     <div class="modal-box">
-      <span class="close-btn" onclick="cerrarModal()">✕</span>
+      <span class="close-btn" id="closeModalBtn">✕</span>
       <h3 id="modalTitle" style="color: #a855f7; margin-bottom: 15px;">Iniciar Sesión</h3>
 
       <input type="email" id="authEmail" class="input-field" placeholder="Correo electrónico">
       <input type="password" id="authPassword" class="input-field" placeholder="Contraseña">
       <input type="text" id="authUsername" class="input-field" placeholder="Nombre de usuario" style="display: none;">
 
-      <button id="btnSubmit" class="btn-submit" onclick="ejecutarAuth()">Entrar</button>
+      <button id="btnSubmit" class="btn-submit">Entrar</button>
 
       <p style="font-size: 12px; margin-top: 15px; text-align: center; color: #aaa;">
         <span id="toggleText">¿No tienes cuenta?</span> 
-        <a href="#" onclick="cambiarModo()" id="toggleLink" style="color: #a855f7; text-decoration: none; font-weight: bold;">Regístrate aquí</a>
+        <a href="#" id="toggleLink" style="color: #a855f7; text-decoration: none; font-weight: bold;">Regístrate aquí</a>
       </p>
     </div>
   </div>
@@ -264,24 +271,26 @@
 
     let esRegistro = false;
 
-    function mostrarModal() {
+    // Asignación directa de eventos
+    document.getElementById('btnAuthTrigger').addEventListener('click', function() {
       document.getElementById('authModal').style.display = 'flex';
-    }
+    });
 
-    function cerrarModal() {
+    document.getElementById('closeModalBtn').addEventListener('click', function() {
       document.getElementById('authModal').style.display = 'none';
-    }
+    });
 
-    function cambiarModo() {
+    document.getElementById('toggleLink').addEventListener('click', function(e) {
+      e.preventDefault();
       esRegistro = !esRegistro;
       document.getElementById('modalTitle').innerText = esRegistro ? 'Crear Cuenta' : 'Iniciar Sesión';
       document.getElementById('btnSubmit').innerText = esRegistro ? 'Registrarse' : 'Entrar';
       document.getElementById('authUsername').style.display = esRegistro ? 'block' : 'none';
       document.getElementById('toggleText').innerText = esRegistro ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?';
       document.getElementById('toggleLink').innerText = esRegistro ? 'Inicia sesión' : 'Regístrate aquí';
-    }
+    });
 
-    async function ejecutarAuth() {
+    document.getElementById('btnSubmit').addEventListener('click', async function() {
       const email = document.getElementById('authEmail').value;
       const password = document.getElementById('authPassword').value;
       const username = document.getElementById('authUsername').value;
@@ -293,13 +302,13 @@
           email, password, options: { data: { username: username || email.split('@')[0] } }
         });
         if (error) alert("Error: " + error.message);
-        else { alert("¡Registro exitoso! Ya puedes iniciar sesión."); cerrarModal(); }
+        else { alert("¡Registro exitoso! Ya puedes iniciar sesión."); document.getElementById('authModal').style.display = 'none'; }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) alert("Error: " + error.message);
         else { alert("¡Bienvenido de nuevo!"); location.reload(); }
       }
-    }
+    });
   </script>
 </body>
 </html>
