@@ -149,19 +149,70 @@
       </div>
     </div>
 
-<!-- Librería de Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Botón visible de Inicio / Registro en la barra superior -->
+  <div style="position: absolute; top: 15px; right: 20px; display: flex; gap: 10px;">
+    <button onclick="mostrarModal()" style="background: #8a2be2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Acceder / Registrarse</button>
+  </div>
 
-  <!-- Script de Conexión -->
+  <!-- Ventana Modal de Autenticación -->
+  <div id="authModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: #1a1a2e; padding: 30px; border-radius: 12px; border: 1px solid #8a2be2; width: 300px; color: white; position: relative;">
+      <span onclick="cerrarModal()" style="position: absolute; right: 15px; top: 10px; cursor: pointer; font-size: 20px;">✕</span>
+      <h3 id="modalTitle" style="margin-top: 0; color: #a855f7;">Iniciar Sesión</h3>
+      
+      <input type="email" id="authEmail" placeholder="Correo electrónico" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #333; background: #0f0f1a; color: white; box-sizing: border-box;">
+      <input type="password" id="authPassword" placeholder="Contraseña" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #333; background: #0f0f1a; color: white; box-sizing: border-box;">
+      <input type="text" id="authUsername" placeholder="Nombre de usuario (solo para registro)" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #333; background: #0f0f1a; color: white; box-sizing: border-box; display: none;">
+
+      <button id="btnSubmit" onclick="ejecutarAuth()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px;">Entrar</button>
+      
+      <p style="font-size: 12px; margin-top: 15px; text-align: center; color: #aaa;">
+        <span id="toggleText">¿No tienes cuenta?</span> 
+        <a href="#" onclick="cambiarModo()" id="toggleLink" style="color: #a855f7; text-decoration: none; font-weight: bold;">Regístrate aquí</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Conexión Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://pbntavryahcdmemussxj.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_ovqY_u8wEJeq72Xx6Jl1Pg_nraMC9Pe";
-
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Conexión exitosa lista
-    console.log("Supabase conectado a la base de datos de RDSM");
-  </script> 
-  </div>
+    let esRegistro = false;
+
+    function mostrarModal() { document.getElementById('authModal').style.display = 'flex'; }
+    function cerrarModal() { document.getElementById('authModal').style.display = 'none'; }
+
+    function cambiarModo() {
+      esRegistro = !esRegistro;
+      document.getElementById('modalTitle').innerText = esRegistro ? 'Crear Cuenta' : 'Iniciar Sesión';
+      document.getElementById('btnSubmit').innerText = esRegistro ? 'Registrarse' : 'Entrar';
+      document.getElementById('authUsername').style.display = esRegistro ? 'block' : 'none';
+      document.getElementById('toggleText').innerText = esRegistro ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?';
+      document.getElementById('toggleLink').innerText = esRegistro ? 'Inicia sesión' : 'Regístrate aquí';
+    }
+
+    async function ejecutarAuth() {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const username = document.getElementById('authUsername').value;
+
+      if(!email || !password) return alert("Completa los campos");
+
+      if (esRegistro) {
+        const { data, error } = await supabase.auth.signUp({
+          email, password, options: { data: { username: username || email.split('@')[0] } }
+        });
+        if (error) alert("Error: " + error.message);
+        else { alert("¡Registro exitoso! Ya puedes iniciar sesión."); cerrarModal(); }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) alert("Error: " + error.message);
+        else { alert("¡Bienvenido!"); location.reload(); }
+      }
+    }
+  </script>
 </body>
 </html>
