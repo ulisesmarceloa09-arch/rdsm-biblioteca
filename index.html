@@ -149,6 +149,19 @@
       </div>
     </div>
 
+<!-- Librería de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Script de Conexión -->
+  <script>
+    const SUPABASE_URL = "https://pbntavryahcdmemussxj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_ovqY_u8wEJeq72Xx6Jl1Pg_nraMC9Pe";
+
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Conexión exitosa lista
+    console.log("Supabase conectado a la base de datos de RDSM");
+  </script> 
   </div>
 </body>
 </html>
